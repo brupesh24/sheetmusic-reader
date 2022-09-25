@@ -62,21 +62,76 @@ averageLeftY = 0
 averageRightX = 0
 averageRightY = 0
 
+maxX = 0
+minX = 500
 if linesP is not None:
     for lineP in linesP:
         l = lineP[0]
-        cv2.line(displayImageP, (l[0], l[1]), (l[2], l[3]), (0,0,255), 1)
+        if minX > l[0]:
+            minX = l[0]
+        if maxX < l[2]:
+            maxX = l[2]
+
+def checkValid(yCoord, yList):
+    for y in yList:
+        if abs(yCoord - y) <= 2 and abs(yCoord - y) <= 30:
+            return False
+    return True
+
+"""
+def createValidYList():
+    yList = []
+    if linesP is not None:
+        for drawLine in linesP:
+            yCheck = drawLine[0][1]
+            yList.append(yCheck)
+    for y in yList:
+        if (abs(yCheck - y) <= 2) and (abs(yCheck - y) >= 30):
+            yList.remove(yCheck)
+    return yList
+"""
+
+yList = []
+count = 0
+drawList = []
+if linesP is not None:
+    for drawLine in linesP:
+        l = drawLine[0]
+        if checkValid(l[1], yList) == True:
+            if (l[2] - l[0] > 100):
+                cv2.line(displayImageP, (minX, l[1]), (maxX, l[1]), (0, 0, 255), 1)
+                drawList.append(l[1])
+        if count%2 == 0:
+            color = (0,0,255)
+        else: 
+            color = (255,0 ,0)
         averageLeftX += l[0]
         averageLeftY += l[1]
         averageRightX += l[2]
         averageRightY += l[3]
-        cv2.line(blank, (l[0], l[1]), (l[2], l[3]), (0,0,255), 1)
+        yList.append(l[1])
+        #print(l[1])
+        count += 1
+
+"""
+yList = createValidYList()
+for y in yList:
+    cv2.line(displayImageP, (minX, y), (maxX, y), (0, 0, 255), 1)
+"""
+
+yList.sort()
+print(yList)
+drawList.sort()
+print(drawList)
 
 lineNum = len(linesP)
 averageLeftX /= lineNum
 averageLeftY /= lineNum
 averageRightX /= lineNum
 averageRightY /= lineNum
+
+print("Count ", count)
+print("drawn Count", len(drawList))
 
 print("Left (%d, %d), Right (%d, %d)" % (averageLeftX, averageLeftY, averageRightX, averageRightY))
 
