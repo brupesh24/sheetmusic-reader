@@ -89,18 +89,34 @@ def createValidYList():
     return yList
 """
 
-def drawLines(displayImageP, minX, maxX, count, drawList):
+def findLines(displayImageP, minX, maxX, count, drawList):
+    linesToDraw = []
     if linesP is not None:
         for drawLine in linesP:
             l = drawLine[0]
             if checkValid(l[1], yList) == True:
                 if (l[2] - l[0] > 100):
-                    cv2.line(displayImageP, (minX, l[1]), (maxX, l[1]), (0, 0, 255), 1)
+                    linesToDraw.append([(minX, l[1]), (maxX, l[1])])
                     drawList.append(l[1])
             yList.append(l[1])
             #print(l[1])
             count += 1
-    return count, drawList
+    return count, drawList, linesToDraw
+
+def drawLines(displayImageP, linesToDraw, drawList):
+    for lineToDraw in linesToDraw:
+        if checkStaff(lineToDraw[0][1], drawList):
+            cv2.line(displayImageP, lineToDraw[0], lineToDraw[1], (0, 0, 255), 1)
+        else:
+            drawList.remove(lineToDraw[0][1])
+    return
+
+def checkStaff(yCoord, drawList):
+    for y in drawList:
+        if abs(yCoord - y) <= 13 and y != yCoord:
+            print(yCoord, y, abs(yCoord-y))
+            return True
+    return False
 
 """
 yList = createValidYList()
@@ -120,7 +136,9 @@ if __name__ == "__main__":
     count = 0
     drawList = []
 
-    count, drawList = drawLines(displayImageP, minX, maxX, count, drawList)
+    count, drawList, linesToDraw = findLines(displayImageP, minX, maxX, count, drawList)
+
+    drawLines(displayImageP, linesToDraw, drawList)
 
     print("Count ", count)
     print("drawn Count", len(drawList))
